@@ -117,53 +117,24 @@ Partial Public Class GroupSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@GroupId", System.Data.SqlDbType.UniqueIdentifier))
         'GroupSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.[Group].[GroupId], [GroupName], [CreatedBy], "& _ 
-            "[CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.[Group] LEF"& _ 
-            "T OUTER JOIN CHANGETABLE(CHANGES dbo.[Group], @sync_last_received_anchor) CT ON "& _ 
-            "CT.[GroupId] = dbo.[Group].[GroupId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT."& _ 
-            "SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.[Group].[Gr"& _ 
-            "oupId], [GroupName], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], ["& _ 
-            "RecordStatus] FROM dbo.[Group] JOIN CHANGETABLE(CHANGES dbo.[Group], @sync_last_"& _ 
-            "received_anchor) CT ON CT.[GroupId] = dbo.[Group].[GroupId] WHERE (CT.SYS_CHANGE"& _ 
-            "_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_ancho"& _ 
-            "r AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id"& _ 
-            "_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.[Group]')) > @sy"& _ 
-            "nc_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up t"& _ 
-            "racking information for table ''%s''. To recover from this error, the client mus"& _ 
-            "t reinitialize its local database and try again',16,3,N'dbo.[Group]')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Group_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'GroupSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[GroupId] FROM CHANGETABLE(CHANGES dbo."& _ 
-            "[Group], @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION = 'D' AND"& _ 
-            " CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT I"& _ 
-            "S NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_"& _ 
-            "MIN_VALID_VERSION(object_id(N'dbo.[Group]')) > @sync_last_received_anchor RAISER"& _ 
-            "ROR (N'SQL Server Change Tracking has cleaned up tracking information for table "& _ 
-            "''%s''. To recover from this error, the client must reinitialize its local datab"& _ 
-            "ase and try again',16,3,N'dbo.[Group]')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Group_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'GroupSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.[Group].[GroupId], [GroupName], [Creat"& _ 
-            "edBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.[Gro"& _ 
-            "up] JOIN CHANGETABLE(CHANGES dbo.[Group], @sync_last_received_anchor) CT ON CT.["& _ 
-            "GroupId] = dbo.[Group].[GroupId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS"& _ 
-            "_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL "& _ 
-            "OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VAL"& _ 
-            "ID_VERSION(object_id(N'dbo.[Group]')) > @sync_last_received_anchor RAISERROR (N'"& _ 
-            "SQL Server Change Tracking has cleaned up tracking information for table ''%s''."& _ 
-            " To recover from this error, the client must reinitialize its local database and"& _ 
-            " try again',16,3,N'dbo.[Group]')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Group_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -3503,57 +3474,24 @@ Partial Public Class DeliveryRemarkSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@DeliveryRemarkId", System.Data.SqlDbType.UniqueIdentifier))
         'DeliveryRemarkSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.DeliveryRemark.[DeliveryRemarkId], [DeliveryR"& _ 
-            "emarkName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate"& _ 
-            "], [RecordStatus] FROM dbo.DeliveryRemark LEFT OUTER JOIN CHANGETABLE(CHANGES db"& _ 
-            "o.DeliveryRemark, @sync_last_received_anchor) CT ON CT.[DeliveryRemarkId] = dbo."& _ 
-            "DeliveryRemark.[DeliveryRemarkId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS"& _ 
-            "_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.DeliveryRemark"& _ 
-            ".[DeliveryRemarkId], [DeliveryRemarkName], [ListOrder], [CreatedBy], [CreatedDat"& _ 
-            "e], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.DeliveryRemark JOIN CH"& _ 
-            "ANGETABLE(CHANGES dbo.DeliveryRemark, @sync_last_received_anchor) CT ON CT.[Deli"& _ 
-            "veryRemarkId] = dbo.DeliveryRemark.[DeliveryRemarkId] WHERE (CT.SYS_CHANGE_OPERA"& _ 
-            "TION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_anchor AND "& _ 
-            "(CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binar"& _ 
-            "y)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.DeliveryRemark')) > @s"& _ 
-            "ync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up "& _ 
-            "tracking information for table ''%s''. To recover from this error, the client mu"& _ 
-            "st reinitialize its local database and try again',16,3,N'dbo.DeliveryRemark')  E"& _ 
-            "ND "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_DeliveryRemark_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'DeliveryRemarkSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[DeliveryRemarkId] FROM CHANGETABLE(CHA"& _ 
-            "NGES dbo.DeliveryRemark, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPE"& _ 
-            "RATION = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_"& _ 
-            "CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF "& _ 
-            "CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.DeliveryRemark')) > @sync_last"& _ 
-            "_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking"& _ 
-            " information for table ''%s''. To recover from this error, the client must reini"& _ 
-            "tialize its local database and try again',16,3,N'dbo.DeliveryRemark')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_DeliveryRemark_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'DeliveryRemarkSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.DeliveryRemark.[DeliveryRemarkId], [De"& _ 
-            "liveryRemarkName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [Modif"& _ 
-            "iedDate], [RecordStatus] FROM dbo.DeliveryRemark JOIN CHANGETABLE(CHANGES dbo.De"& _ 
-            "liveryRemark, @sync_last_received_anchor) CT ON CT.[DeliveryRemarkId] = dbo.Deli"& _ 
-            "veryRemark.[DeliveryRemarkId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CH"& _ 
-            "ANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR "& _ 
-            "CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_"& _ 
-            "VERSION(object_id(N'dbo.DeliveryRemark')) > @sync_last_received_anchor RAISERROR"& _ 
-            " (N'SQL Server Change Tracking has cleaned up tracking information for table ''%"& _ 
-            "s''. To recover from this error, the client must reinitialize its local database"& _ 
-            " and try again',16,3,N'dbo.DeliveryRemark')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_DeliveryRemark_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -3674,56 +3612,24 @@ Partial Public Class DeliveryStatusSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@DeliveryStatusId", System.Data.SqlDbType.UniqueIdentifier))
         'DeliveryStatusSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.DeliveryStatus.[DeliveryStatusId], [DeliveryS"& _ 
-            "tatusName], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordSta"& _ 
-            "tus] FROM dbo.DeliveryStatus LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.DeliverySta"& _ 
-            "tus, @sync_last_received_anchor) CT ON CT.[DeliveryStatusId] = dbo.DeliveryStatu"& _ 
-            "s.[DeliveryStatusId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTE"& _ 
-            "XT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.DeliveryStatus.[DeliverySta"& _ 
-            "tusId], [DeliveryStatusName], [CreatedBy], [CreatedDate], [ModifiedBy], [Modifie"& _ 
-            "dDate], [RecordStatus] FROM dbo.DeliveryStatus JOIN CHANGETABLE(CHANGES dbo.Deli"& _ 
-            "veryStatus, @sync_last_received_anchor) CT ON CT.[DeliveryStatusId] = dbo.Delive"& _ 
-            "ryStatus.[DeliveryStatusId] WHERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHAN"& _ 
-            "GE_CREATION_VERSION  <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS "& _ 
-            "NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MI"& _ 
-            "N_VALID_VERSION(object_id(N'dbo.DeliveryStatus')) > @sync_last_received_anchor R"& _ 
-            "AISERROR (N'SQL Server Change Tracking has cleaned up tracking information for t"& _ 
-            "able ''%s''. To recover from this error, the client must reinitialize its local "& _ 
-            "database and try again',16,3,N'dbo.DeliveryStatus')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_DeliveryStatus_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'DeliveryStatusSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[DeliveryStatusId] FROM CHANGETABLE(CHA"& _ 
-            "NGES dbo.DeliveryStatus, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPE"& _ 
-            "RATION = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_"& _ 
-            "CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF "& _ 
-            "CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.DeliveryStatus')) > @sync_last"& _ 
-            "_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking"& _ 
-            " information for table ''%s''. To recover from this error, the client must reini"& _ 
-            "tialize its local database and try again',16,3,N'dbo.DeliveryStatus')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_DeliveryStatus_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'DeliveryStatusSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.DeliveryStatus.[DeliveryStatusId], [De"& _ 
-            "liveryStatusName], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [Re"& _ 
-            "cordStatus] FROM dbo.DeliveryStatus JOIN CHANGETABLE(CHANGES dbo.DeliveryStatus,"& _ 
-            " @sync_last_received_anchor) CT ON CT.[DeliveryStatusId] = dbo.DeliveryStatus.[D"& _ 
-            "eliveryStatusId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION "& _ 
-            "<= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE"& _ 
-            "_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(objec"& _ 
-            "t_id(N'dbo.DeliveryStatus')) > @sync_last_received_anchor RAISERROR (N'SQL Serve"& _ 
-            "r Change Tracking has cleaned up tracking information for table ''%s''. To recov"& _ 
-            "er from this error, the client must reinitialize its local database and try agai"& _ 
-            "n',16,3,N'dbo.DeliveryStatus')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_DeliveryStatus_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -3842,54 +3748,24 @@ Partial Public Class DepartmentSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@DepartmentId", System.Data.SqlDbType.UniqueIdentifier))
         'DepartmentSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.Department.[DepartmentId], [DepartmentName], "& _ 
-            "[CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM db"& _ 
-            "o.Department LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Department, @sync_last_rece"& _ 
-            "ived_anchor) CT ON CT.[DepartmentId] = dbo.Department.[DepartmentId] WHERE (CT.S"& _ 
-            "YS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) EL"& _ 
-            "SE  BEGIN SELECT dbo.Department.[DepartmentId], [DepartmentName], [CreatedBy], ["& _ 
-            "CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.Department J"& _ 
-            "OIN CHANGETABLE(CHANGES dbo.Department, @sync_last_received_anchor) CT ON CT.[De"& _ 
-            "partmentId] = dbo.Department.[DepartmentId] WHERE (CT.SYS_CHANGE_OPERATION = 'I'"& _ 
-            " AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_anchor AND (CT.SYS_CH"& _ 
-            "ANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CH"& _ 
-            "ANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Department')) > @sync_last_recei"& _ 
-            "ved_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking infor"& _ 
-            "mation for table ''%s''. To recover from this error, the client must reinitializ"& _ 
-            "e its local database and try again',16,3,N'dbo.Department')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Department_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'DepartmentSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[DepartmentId] FROM CHANGETABLE(CHANGES"& _ 
-            " dbo.Department, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION ="& _ 
-            " 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_C"& _ 
-            "ONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_T"& _ 
-            "RACKING_MIN_VALID_VERSION(object_id(N'dbo.Department')) > @sync_last_received_an"& _ 
-            "chor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking information"& _ 
-            " for table ''%s''. To recover from this error, the client must reinitialize its "& _ 
-            "local database and try again',16,3,N'dbo.Department')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Department_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'DepartmentSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.Department.[DepartmentId], [Department"& _ 
-            "Name], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] "& _ 
-            "FROM dbo.Department JOIN CHANGETABLE(CHANGES dbo.Department, @sync_last_received"& _ 
-            "_anchor) CT ON CT.[DepartmentId] = dbo.Department.[DepartmentId] WHERE (CT.SYS_C"& _ 
-            "HANGE_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND"& _ 
-            " (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_bina"& _ 
-            "ry)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Department')) > @sync"& _ 
-            "_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tra"& _ 
-            "cking information for table ''%s''. To recover from this error, the client must "& _ 
-            "reinitialize its local database and try again',16,3,N'dbo.Department')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Department_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4044,62 +3920,24 @@ Partial Public Class DistributionSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@DistributionID", System.Data.SqlDbType.UniqueIdentifier))
         'DistributionSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.Distribution.[DistributionID], [UserID], [Are"& _ 
-            "aID], [BatchID], [Driver], [Checker], [PlateNo], [ShipmentId], [ConsigneeID], [P"& _ 
-            "aymentModeID], [ServiceModeID], [Amount], [AirwayBillNo], [Cargo], [Uploaded], ["& _ 
-            "CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [RecordStatus] FROM dbo"& _ 
-            ".Distribution LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Distribution, @sync_last_r"& _ 
-            "eceived_anchor) CT ON CT.[DistributionID] = dbo.Distribution.[DistributionID] WH"& _ 
-            "ERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_b"& _ 
-            "inary) ELSE  BEGIN SELECT dbo.Distribution.[DistributionID], [UserID], [AreaID],"& _ 
-            " [BatchID], [Driver], [Checker], [PlateNo], [ShipmentId], [ConsigneeID], [Paymen"& _ 
-            "tModeID], [ServiceModeID], [Amount], [AirwayBillNo], [Cargo], [Uploaded], [Creat"& _ 
-            "edDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [RecordStatus] FROM dbo.Dist"& _ 
-            "ribution JOIN CHANGETABLE(CHANGES dbo.Distribution, @sync_last_received_anchor) "& _ 
-            "CT ON CT.[DistributionID] = dbo.Distribution.[DistributionID] WHERE (CT.SYS_CHAN"& _ 
-            "GE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_anc"& _ 
-            "hor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_"& _ 
-            "id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Distribution')"& _ 
-            ") > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has clean"& _ 
-            "ed up tracking information for table ''%s''. To recover from this error, the cli"& _ 
-            "ent must reinitialize its local database and try again',16,3,N'dbo.Distribution'"& _ 
-            ")  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Distribution_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'DistributionSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[DistributionID] FROM CHANGETABLE(CHANG"& _ 
-            "ES dbo.Distribution, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATI"& _ 
-            "ON = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHAN"& _ 
-            "GE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHAN"& _ 
-            "GE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Distribution')) > @sync_last_recei"& _ 
-            "ved_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking infor"& _ 
-            "mation for table ''%s''. To recover from this error, the client must reinitializ"& _ 
-            "e its local database and try again',16,3,N'dbo.Distribution')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Distribution_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'DistributionSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.Distribution.[DistributionID], [UserID"& _ 
-            "], [AreaID], [BatchID], [Driver], [Checker], [PlateNo], [ShipmentId], [Consignee"& _ 
-            "ID], [PaymentModeID], [ServiceModeID], [Amount], [AirwayBillNo], [Cargo], [Uploa"& _ 
-            "ded], [CreatedDate], [CreatedBy], [ModifiedDate], [ModifiedBy], [RecordStatus] F"& _ 
-            "ROM dbo.Distribution JOIN CHANGETABLE(CHANGES dbo.Distribution, @sync_last_recei"& _ 
-            "ved_anchor) CT ON CT.[DistributionID] = dbo.Distribution.[DistributionID] WHERE "& _ 
-            "(CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_a"& _ 
-            "nchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_clien"& _ 
-            "t_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Distribution"& _ 
-            "')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cle"& _ 
-            "aned up tracking information for table ''%s''. To recover from this error, the c"& _ 
-            "lient must reinitialize its local database and try again',16,3,N'dbo.Distributio"& _ 
-            "n')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Distribution_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4248,60 +4086,24 @@ Partial Public Class EmployeeSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@EmployeeId", System.Data.SqlDbType.UniqueIdentifier))
         'EmployeeSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.Employee.[EmployeeId], [PositionId], [Departm"& _ 
-            "entId], [AssignedToAreaId], [FirstName], [MiddleName], [LastName], [Birthdate], "& _ 
-            "[ContactNo], [Mobile], [Email], [DriversLicenseNo], [DriversLicenseExpiration], "& _ 
-            "[CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM db"& _ 
-            "o.Employee LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Employee, @sync_last_received"& _ 
-            "_anchor) CT ON CT.[EmployeeId] = dbo.Employee.[EmployeeId] WHERE (CT.SYS_CHANGE_"& _ 
-            "CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN "& _ 
-            "SELECT dbo.Employee.[EmployeeId], [PositionId], [DepartmentId], [AssignedToAreaI"& _ 
-            "d], [FirstName], [MiddleName], [LastName], [Birthdate], [ContactNo], [Mobile], ["& _ 
-            "Email], [DriversLicenseNo], [DriversLicenseExpiration], [CreatedBy], [CreatedDat"& _ 
-            "e], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.Employee JOIN CHANGETA"& _ 
-            "BLE(CHANGES dbo.Employee, @sync_last_received_anchor) CT ON CT.[EmployeeId] = db"& _ 
-            "o.Employee.[EmployeeId] WHERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_C"& _ 
-            "REATION_VERSION  <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL"& _ 
-            " OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VA"& _ 
-            "LID_VERSION(object_id(N'dbo.Employee')) > @sync_last_received_anchor RAISERROR ("& _ 
-            "N'SQL Server Change Tracking has cleaned up tracking information for table ''%s'"& _ 
-            "'. To recover from this error, the client must reinitialize its local database a"& _ 
-            "nd try again',16,3,N'dbo.Employee')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Employee_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'EmployeeSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[EmployeeId] FROM CHANGETABLE(CHANGES d"& _ 
-            "bo.Employee, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION = 'D'"& _ 
-            " AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTE"& _ 
-            "XT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACK"& _ 
-            "ING_MIN_VALID_VERSION(object_id(N'dbo.Employee')) > @sync_last_received_anchor R"& _ 
-            "AISERROR (N'SQL Server Change Tracking has cleaned up tracking information for t"& _ 
-            "able ''%s''. To recover from this error, the client must reinitialize its local "& _ 
-            "database and try again',16,3,N'dbo.Employee')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Employee_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'EmployeeSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.Employee.[EmployeeId], [PositionId], ["& _ 
-            "DepartmentId], [AssignedToAreaId], [FirstName], [MiddleName], [LastName], [Birth"& _ 
-            "date], [ContactNo], [Mobile], [Email], [DriversLicenseNo], [DriversLicenseExpira"& _ 
-            "tion], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] "& _ 
-            "FROM dbo.Employee JOIN CHANGETABLE(CHANGES dbo.Employee, @sync_last_received_anc"& _ 
-            "hor) CT ON CT.[EmployeeId] = dbo.Employee.[EmployeeId] WHERE (CT.SYS_CHANGE_OPER"& _ 
-            "ATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_C"& _ 
-            "HANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF C"& _ 
-            "HANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Employee')) > @sync_last_receiv"& _ 
-            "ed_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking inform"& _ 
-            "ation for table ''%s''. To recover from this error, the client must reinitialize"& _ 
-            " its local database and try again',16,3,N'dbo.Employee')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Employee_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4442,60 +4244,24 @@ Partial Public Class ExpressRateSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@ExpressRateId", System.Data.SqlDbType.UniqueIdentifier))
         'ExpressRateSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.ExpressRate.[ExpressRateId], [1to5Cost], [6to"& _ 
-            "49Cost], [50to249Cost], [250to999Cost], [1000to10000Cost], [EffectiveDate], [Ori"& _ 
-            "ginCityId], [DestinationCityId], [CreatedBy], [CreatedDate], [ModifiedBy], [Modi"& _ 
-            "fiedDate], [RecordStatus], [RateMatrixId] FROM dbo.ExpressRate LEFT OUTER JOIN C"& _ 
-            "HANGETABLE(CHANGES dbo.ExpressRate, @sync_last_received_anchor) CT ON CT.[Expres"& _ 
-            "sRateId] = dbo.ExpressRate.[ExpressRateId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL "& _ 
-            "OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.Expre"& _ 
-            "ssRate.[ExpressRateId], [1to5Cost], [6to49Cost], [50to249Cost], [250to999Cost], "& _ 
-            "[1000to10000Cost], [EffectiveDate], [OriginCityId], [DestinationCityId], [Create"& _ 
-            "dBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus], [RateMatrixId"& _ 
-            "] FROM dbo.ExpressRate JOIN CHANGETABLE(CHANGES dbo.ExpressRate, @sync_last_rece"& _ 
-            "ived_anchor) CT ON CT.[ExpressRateId] = dbo.ExpressRate.[ExpressRateId] WHERE (C"& _ 
-            "T.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_re"& _ 
-            "ceived_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sy"& _ 
-            "nc_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Expr"& _ 
-            "essRate')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking "& _ 
-            "has cleaned up tracking information for table ''%s''. To recover from this error"& _ 
-            ", the client must reinitialize its local database and try again',16,3,N'dbo.Expr"& _ 
-            "essRate')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_ExpressRate_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'ExpressRateSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[ExpressRateId] FROM CHANGETABLE(CHANGE"& _ 
-            "S dbo.ExpressRate, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION"& _ 
-            " = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE"& _ 
-            "_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE"& _ 
-            "_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.ExpressRate')) > @sync_last_received"& _ 
-            "_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking informat"& _ 
-            "ion for table ''%s''. To recover from this error, the client must reinitialize i"& _ 
-            "ts local database and try again',16,3,N'dbo.ExpressRate')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_ExpressRate_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'ExpressRateSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.ExpressRate.[ExpressRateId], [1to5Cost"& _ 
-            "], [6to49Cost], [50to249Cost], [250to999Cost], [1000to10000Cost], [EffectiveDate"& _ 
-            "], [OriginCityId], [DestinationCityId], [CreatedBy], [CreatedDate], [ModifiedBy]"& _ 
-            ", [ModifiedDate], [RecordStatus], [RateMatrixId] FROM dbo.ExpressRate JOIN CHANG"& _ 
-            "ETABLE(CHANGES dbo.ExpressRate, @sync_last_received_anchor) CT ON CT.[ExpressRat"& _ 
-            "eId] = dbo.ExpressRate.[ExpressRateId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND "& _ 
-            "CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS"& _ 
-            " NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_M"& _ 
-            "IN_VALID_VERSION(object_id(N'dbo.ExpressRate')) > @sync_last_received_anchor RAI"& _ 
-            "SERROR (N'SQL Server Change Tracking has cleaned up tracking information for tab"& _ 
-            "le ''%s''. To recover from this error, the client must reinitialize its local da"& _ 
-            "tabase and try again',16,3,N'dbo.ExpressRate')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_ExpressRate_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4631,59 +4397,24 @@ Partial Public Class FuelSurchargeSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@FuelSurchargeId", System.Data.SqlDbType.UniqueIdentifier))
         'FuelSurchargeSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.FuelSurcharge.[FuelSurchargeId], [OriginGroup"& _ 
-            "Id], [DestinationGroupId], [Amount], [IsVatable], [Description], [EffectiveDate]"& _ 
-            ", [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM "& _ 
-            "dbo.FuelSurcharge LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.FuelSurcharge, @sync_l"& _ 
-            "ast_received_anchor) CT ON CT.[FuelSurchargeId] = dbo.FuelSurcharge.[FuelSurchar"& _ 
-            "geId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_cli"& _ 
-            "ent_id_binary) ELSE  BEGIN SELECT dbo.FuelSurcharge.[FuelSurchargeId], [OriginGr"& _ 
-            "oupId], [DestinationGroupId], [Amount], [IsVatable], [Description], [EffectiveDa"& _ 
-            "te], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FR"& _ 
-            "OM dbo.FuelSurcharge JOIN CHANGETABLE(CHANGES dbo.FuelSurcharge, @sync_last_rece"& _ 
-            "ived_anchor) CT ON CT.[FuelSurchargeId] = dbo.FuelSurcharge.[FuelSurchargeId] WH"& _ 
-            "ERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_"& _ 
-            "new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT "& _ 
-            "<> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'db"& _ 
-            "o.FuelSurcharge')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change T"& _ 
-            "racking has cleaned up tracking information for table ''%s''. To recover from th"& _ 
-            "is error, the client must reinitialize its local database and try again',16,3,N'"& _ 
-            "dbo.FuelSurcharge')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_FuelSurcharge_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'FuelSurchargeSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[FuelSurchargeId] FROM CHANGETABLE(CHAN"& _ 
-            "GES dbo.FuelSurcharge, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERA"& _ 
-            "TION = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CH"& _ 
-            "ANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CH"& _ 
-            "ANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.FuelSurcharge')) > @sync_last_re"& _ 
-            "ceived_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking in"& _ 
-            "formation for table ''%s''. To recover from this error, the client must reinitia"& _ 
-            "lize its local database and try again',16,3,N'dbo.FuelSurcharge')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_FuelSurcharge_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'FuelSurchargeSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.FuelSurcharge.[FuelSurchargeId], [Orig"& _ 
-            "inGroupId], [DestinationGroupId], [Amount], [IsVatable], [Description], [Effecti"& _ 
-            "veDate], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus"& _ 
-            "] FROM dbo.FuelSurcharge JOIN CHANGETABLE(CHANGES dbo.FuelSurcharge, @sync_last_"& _ 
-            "received_anchor) CT ON CT.[FuelSurchargeId] = dbo.FuelSurcharge.[FuelSurchargeId"& _ 
-            "] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_re"& _ 
-            "ceived_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sy"& _ 
-            "nc_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Fuel"& _ 
-            "Surcharge')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Trackin"& _ 
-            "g has cleaned up tracking information for table ''%s''. To recover from this err"& _ 
-            "or, the client must reinitialize its local database and try again',16,3,N'dbo.Fu"& _ 
-            "elSurcharge')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_FuelSurcharge_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4805,58 +4536,24 @@ Partial Public Class GoodsDescriptionSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@GoodsDescriptionId", System.Data.SqlDbType.UniqueIdentifier))
         'GoodsDescriptionSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.GoodsDescription.[GoodsDescriptionId], [Goods"& _ 
-            "DescriptionName], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [Rec"& _ 
-            "ordStatus] FROM dbo.GoodsDescription LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Goo"& _ 
-            "dsDescription, @sync_last_received_anchor) CT ON CT.[GoodsDescriptionId] = dbo.G"& _ 
-            "oodsDescription.[GoodsDescriptionId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT."& _ 
-            "SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.GoodsDescri"& _ 
-            "ption.[GoodsDescriptionId], [GoodsDescriptionName], [CreatedBy], [CreatedDate], "& _ 
-            "[ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.GoodsDescription JOIN CHAN"& _ 
-            "GETABLE(CHANGES dbo.GoodsDescription, @sync_last_received_anchor) CT ON CT.[Good"& _ 
-            "sDescriptionId] = dbo.GoodsDescription.[GoodsDescriptionId] WHERE (CT.SYS_CHANGE"& _ 
-            "_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_ancho"& _ 
-            "r AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id"& _ 
-            "_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.GoodsDescription"& _ 
-            "')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cle"& _ 
-            "aned up tracking information for table ''%s''. To recover from this error, the c"& _ 
-            "lient must reinitialize its local database and try again',16,3,N'dbo.GoodsDescri"& _ 
-            "ption')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_GoodsDescription_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'GoodsDescriptionSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[GoodsDescriptionId] FROM CHANGETABLE(C"& _ 
-            "HANGES dbo.GoodsDescription, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE"& _ 
-            "_OPERATION = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT."& _ 
-            "SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary));"& _ 
-            " IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.GoodsDescription')) > @syn"& _ 
-            "c_last_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tr"& _ 
-            "acking information for table ''%s''. To recover from this error, the client must"& _ 
-            " reinitialize its local database and try again',16,3,N'dbo.GoodsDescription')  E"& _ 
-            "ND "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_GoodsDescription_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'GoodsDescriptionSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.GoodsDescription.[GoodsDescriptionId],"& _ 
-            " [GoodsDescriptionName], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate"& _ 
-            "], [RecordStatus] FROM dbo.GoodsDescription JOIN CHANGETABLE(CHANGES dbo.GoodsDe"& _ 
-            "scription, @sync_last_received_anchor) CT ON CT.[GoodsDescriptionId] = dbo.Goods"& _ 
-            "Description.[GoodsDescriptionId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS"& _ 
-            "_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL "& _ 
-            "OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VAL"& _ 
-            "ID_VERSION(object_id(N'dbo.GoodsDescription')) > @sync_last_received_anchor RAIS"& _ 
-            "ERROR (N'SQL Server Change Tracking has cleaned up tracking information for tabl"& _ 
-            "e ''%s''. To recover from this error, the client must reinitialize its local dat"& _ 
-            "abase and try again',16,3,N'dbo.GoodsDescription')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_GoodsDescription_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -4886,17 +4583,8 @@ Partial Public Class PackageNumberSyncAdapter
     Private Sub InitializeCommands()
         'PackageNumberSyncTableInsertCommand command.
         Me.InsertCommand = New System.Data.SqlClient.SqlCommand
-        Me.InsertCommand.CommandText = ";WITH CHANGE_TRACKING_CONTEXT (@sync_client_id_binary) INSERT INTO dbo.PackageNum"& _ 
-            "ber ([PackageNumberId], [ShipmentId], [PackageNo], [ScannedById], [CreatedBy], ["& _ 
-            "CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus], [ScannedDate]) VALUE"& _ 
-            "S (@PackageNumberId, @ShipmentId, @PackageNo, @ScannedById, @CreatedBy, @Created"& _ 
-            "Date, @ModifiedBy, @ModifiedDate, @RecordStatus, @ScannedDate) SET @sync_row_cou"& _ 
-            "nt = @@rowcount; IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PackageNum"& _ 
-            "ber')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has "& _ 
-            "cleaned up tracking information for table ''%s''. To recover from this error, th"& _ 
-            "e client must reinitialize its local database and try again',16,3,N'dbo.PackageN"& _ 
-            "umber') "
-        Me.InsertCommand.CommandType = System.Data.CommandType.Text
+        Me.InsertCommand.CommandText = "sp_sync_PackageNumber_Insert"
+        Me.InsertCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageNumberId", System.Data.SqlDbType.UniqueIdentifier))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@ShipmentId", System.Data.SqlDbType.UniqueIdentifier))
@@ -4968,20 +4656,14 @@ Partial Public Class PackageNumberSyncAdapter
         Me.UpdateCommand.Parameters.Add(updatecommand_sync_row_countParameter)
         'PackageNumberSyncTableSelectConflictDeletedRowsCommand command.
         Me.SelectConflictDeletedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictDeletedRowsCommand.CommandText = "SELECT CT.[PackageNumberId], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM CH"& _ 
-            "ANGETABLE(CHANGES dbo.PackageNumber, @sync_last_received_anchor) CT WHERE (CT.[P"& _ 
-            "ackageNumberId] = @PackageNumberId AND CT.SYS_CHANGE_OPERATION = 'D')"
-        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictDeletedRowsCommand.CommandText = "sp_sync_PackageNumber_SelectConflictDeletedRow"
+        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageNumberId", System.Data.SqlDbType.UniqueIdentifier))
         'PackageNumberSyncTableSelectConflictUpdatedRowsCommand command.
         Me.SelectConflictUpdatedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictUpdatedRowsCommand.CommandText = "SELECT dbo.PackageNumber.[PackageNumberId], [ShipmentId], [PackageNo], [ScannedBy"& _ 
-            "Id], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus], ["& _ 
-            "ScannedDate], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM dbo.PackageNumbe"& _ 
-            "r JOIN CHANGETABLE(VERSION dbo.PackageNumber, ([PackageNumberId]), (@PackageNumb"& _ 
-            "erId)) CT  ON CT.[PackageNumberId] = dbo.PackageNumber.[PackageNumberId]"
-        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictUpdatedRowsCommand.CommandText = "sp_sync_PackageNumber_SelectConflictUpdatedRow"
+        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageNumberId", System.Data.SqlDbType.UniqueIdentifier))
         'PackageNumberSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
@@ -5065,17 +4747,8 @@ Partial Public Class PackagingSyncAdapter
     Private Sub InitializeCommands()
         'PackagingSyncTableInsertCommand command.
         Me.InsertCommand = New System.Data.SqlClient.SqlCommand
-        Me.InsertCommand.CommandText = ";WITH CHANGE_TRACKING_CONTEXT (@sync_client_id_binary) INSERT INTO dbo.Packaging "& _ 
-            "([PackagingId], [PackagingName], [Multiplier], [BaseMinimum], [BaseMaximum], [Ba"& _ 
-            "seFee], [ExcessCost], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], "& _ 
-            "[RecordStatus]) VALUES (@PackagingId, @PackagingName, @Multiplier, @BaseMinimum,"& _ 
-            " @BaseMaximum, @BaseFee, @ExcessCost, @CreatedBy, @CreatedDate, @ModifiedBy, @Mo"& _ 
-            "difiedDate, @RecordStatus) SET @sync_row_count = @@rowcount; IF CHANGE_TRACKING_"& _ 
-            "MIN_VALID_VERSION(object_id(N'dbo.Packaging')) > @sync_last_received_anchor RAIS"& _ 
-            "ERROR (N'SQL Server Change Tracking has cleaned up tracking information for tabl"& _ 
-            "e ''%s''. To recover from this error, the client must reinitialize its local dat"& _ 
-            "abase and try again',16,3,N'dbo.Packaging') "
-        Me.InsertCommand.CommandType = System.Data.CommandType.Text
+        Me.InsertCommand.CommandText = "sp_sync_Packaging_Insert"
+        Me.InsertCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackagingId", System.Data.SqlDbType.UniqueIdentifier))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackagingName", System.Data.SqlDbType.NVarChar))
@@ -5150,20 +4823,14 @@ Partial Public Class PackagingSyncAdapter
         Me.UpdateCommand.Parameters.Add(updatecommand_sync_row_countParameter)
         'PackagingSyncTableSelectConflictDeletedRowsCommand command.
         Me.SelectConflictDeletedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictDeletedRowsCommand.CommandText = "SELECT CT.[PackagingId], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM CHANGE"& _ 
-            "TABLE(CHANGES dbo.Packaging, @sync_last_received_anchor) CT WHERE (CT.[Packaging"& _ 
-            "Id] = @PackagingId AND CT.SYS_CHANGE_OPERATION = 'D')"
-        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictDeletedRowsCommand.CommandText = "sp_sync_Packaging_SelectConflictDeletedRow"
+        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackagingId", System.Data.SqlDbType.UniqueIdentifier))
         'PackagingSyncTableSelectConflictUpdatedRowsCommand command.
         Me.SelectConflictUpdatedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictUpdatedRowsCommand.CommandText = "SELECT dbo.Packaging.[PackagingId], [PackagingName], [Multiplier], [BaseMinimum],"& _ 
-            " [BaseMaximum], [BaseFee], [ExcessCost], [CreatedBy], [CreatedDate], [ModifiedBy"& _ 
-            "], [ModifiedDate], [RecordStatus], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION "& _ 
-            "FROM dbo.Packaging JOIN CHANGETABLE(VERSION dbo.Packaging, ([PackagingId]), (@Pa"& _ 
-            "ckagingId)) CT  ON CT.[PackagingId] = dbo.Packaging.[PackagingId]"
-        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictUpdatedRowsCommand.CommandText = "sp_sync_Packaging_SelectConflictUpdatedRow"
+        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackagingId", System.Data.SqlDbType.UniqueIdentifier))
         'PackagingSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
@@ -5247,20 +4914,8 @@ Partial Public Class PaymentSyncAdapter
     Private Sub InitializeCommands()
         'PaymentSyncTableInsertCommand command.
         Me.InsertCommand = New System.Data.SqlClient.SqlCommand
-        Me.InsertCommand.CommandText = ";WITH CHANGE_TRACKING_CONTEXT (@sync_client_id_binary) INSERT INTO dbo.Payment (["& _ 
-            "PaymentId], [ShipmentId], [PaymentDate], [OrNo], [Amount], [PaymentTypeId], [Che"& _ 
-            "ckBankName], [CheckNo], [CheckDate], [ReceivedById], [VerifiedDate], [VerifiedBy"& _ 
-            "Id], [Remarks], [StatementOfAccountPaymentId], [TaxWithheld], [CreatedBy], [Crea"& _ 
-            "tedDate], [ModifiedBy], [ModifiedDate], [RecordStatus], [PrNo]) VALUES (@Payment"& _ 
-            "Id, @ShipmentId, @PaymentDate, @OrNo, @Amount, @PaymentTypeId, @CheckBankName, @"& _ 
-            "CheckNo, @CheckDate, @ReceivedById, @VerifiedDate, @VerifiedById, @Remarks, @Sta"& _ 
-            "tementOfAccountPaymentId, @TaxWithheld, @CreatedBy, @CreatedDate, @ModifiedBy, @"& _ 
-            "ModifiedDate, @RecordStatus, @PrNo) SET @sync_row_count = @@rowcount; IF CHANGE_"& _ 
-            "TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Payment')) > @sync_last_received_anch"& _ 
-            "or RAISERROR (N'SQL Server Change Tracking has cleaned up tracking information f"& _ 
-            "or table ''%s''. To recover from this error, the client must reinitialize its lo"& _ 
-            "cal database and try again',16,3,N'dbo.Payment') "
-        Me.InsertCommand.CommandType = System.Data.CommandType.Text
+        Me.InsertCommand.CommandText = "sp_sync_Payment_Insert"
+        Me.InsertCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentId", System.Data.SqlDbType.UniqueIdentifier))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@ShipmentId", System.Data.SqlDbType.UniqueIdentifier))
@@ -5356,22 +5011,14 @@ Partial Public Class PaymentSyncAdapter
         Me.UpdateCommand.Parameters.Add(updatecommand_sync_row_countParameter)
         'PaymentSyncTableSelectConflictDeletedRowsCommand command.
         Me.SelectConflictDeletedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictDeletedRowsCommand.CommandText = "SELECT CT.[PaymentId], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM CHANGETA"& _ 
-            "BLE(CHANGES dbo.Payment, @sync_last_received_anchor) CT WHERE (CT.[PaymentId] = "& _ 
-            "@PaymentId AND CT.SYS_CHANGE_OPERATION = 'D')"
-        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictDeletedRowsCommand.CommandText = "sp_sync_Payment_SelectConflictDeletedRow"
+        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentId", System.Data.SqlDbType.UniqueIdentifier))
         'PaymentSyncTableSelectConflictUpdatedRowsCommand command.
         Me.SelectConflictUpdatedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictUpdatedRowsCommand.CommandText = "SELECT dbo.Payment.[PaymentId], [ShipmentId], [PaymentDate], [OrNo], [Amount], [P" & _
-            "aymentTypeId], [CheckBankName], [CheckNo], [CheckDate], [ReceivedById], [Verifie" & _
-            "dDate], [VerifiedById], [Remarks], [StatementOfAccountPaymentId], [TaxWithheld]," & _
-            " [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus], [PrNo" & _
-            "], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM dbo.Payment JOIN CHANGETABL" & _
-            "E(VERSION dbo.Payment, ([PaymentId]), (@PaymentId)) CT  ON CT.[PaymentId] = dbo." & _
-            "Payment.[PaymentId]"
-        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictUpdatedRowsCommand.CommandText = "sp_sync_Payment_SelectConflictUpdatedRow"
+        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentId", System.Data.SqlDbType.UniqueIdentifier))
         'PaymentSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
@@ -5555,56 +5202,24 @@ Partial Public Class PaymentModeSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentModeId", System.Data.SqlDbType.UniqueIdentifier))
         'PaymentModeSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.PaymentMode.[PaymentModeId], [PaymentModeCode"& _ 
-            "], [PaymentModeName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [Mo"& _ 
-            "difiedDate], [RecordStatus] FROM dbo.PaymentMode LEFT OUTER JOIN CHANGETABLE(CHA"& _ 
-            "NGES dbo.PaymentMode, @sync_last_received_anchor) CT ON CT.[PaymentModeId] = dbo"& _ 
-            ".PaymentMode.[PaymentModeId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHAN"& _ 
-            "GE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.PaymentMode.[Paymen"& _ 
-            "tModeId], [PaymentModeCode], [PaymentModeName], [ListOrder], [CreatedBy], [Creat"& _ 
-            "edDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.PaymentMode JOIN "& _ 
-            "CHANGETABLE(CHANGES dbo.PaymentMode, @sync_last_received_anchor) CT ON CT.[Payme"& _ 
-            "ntModeId] = dbo.PaymentMode.[PaymentModeId] WHERE (CT.SYS_CHANGE_OPERATION = 'I'"& _ 
-            " AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_anchor AND (CT.SYS_CH"& _ 
-            "ANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CH"& _ 
-            "ANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PaymentMode')) > @sync_last_rece"& _ 
-            "ived_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking info"& _ 
-            "rmation for table ''%s''. To recover from this error, the client must reinitiali"& _ 
-            "ze its local database and try again',16,3,N'dbo.PaymentMode')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_PaymentMode_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'PaymentModeSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[PaymentModeId] FROM CHANGETABLE(CHANGE"& _ 
-            "S dbo.PaymentMode, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION"& _ 
-            " = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE"& _ 
-            "_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE"& _ 
-            "_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PaymentMode')) > @sync_last_received"& _ 
-            "_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking informat"& _ 
-            "ion for table ''%s''. To recover from this error, the client must reinitialize i"& _ 
-            "ts local database and try again',16,3,N'dbo.PaymentMode')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_PaymentMode_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'PaymentModeSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.PaymentMode.[PaymentModeId], [PaymentM"& _ 
-            "odeCode], [PaymentModeName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedB"& _ 
-            "y], [ModifiedDate], [RecordStatus] FROM dbo.PaymentMode JOIN CHANGETABLE(CHANGES"& _ 
-            " dbo.PaymentMode, @sync_last_received_anchor) CT ON CT.[PaymentModeId] = dbo.Pay"& _ 
-            "mentMode.[PaymentModeId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CHANGE_"& _ 
-            "VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SY"& _ 
-            "S_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSI"& _ 
-            "ON(object_id(N'dbo.PaymentMode')) > @sync_last_received_anchor RAISERROR (N'SQL "& _ 
-            "Server Change Tracking has cleaned up tracking information for table ''%s''. To "& _ 
-            "recover from this error, the client must reinitialize its local database and try"& _ 
-            " again',16,3,N'dbo.PaymentMode')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_PaymentMode_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -5732,57 +5347,24 @@ Partial Public Class PaymentTermSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentTermId", System.Data.SqlDbType.UniqueIdentifier))
         'PaymentTermSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.PaymentTerm.[PaymentTermId], [PaymentTermName"& _ 
-            "], [NumberOfDays], [Description], [ListOrder], [CreatedBy], [CreatedDate], [Modi"& _ 
-            "fiedBy], [ModifiedDate], [RecordStatus] FROM dbo.PaymentTerm LEFT OUTER JOIN CHA"& _ 
-            "NGETABLE(CHANGES dbo.PaymentTerm, @sync_last_received_anchor) CT ON CT.[PaymentT"& _ 
-            "ermId] = dbo.PaymentTerm.[PaymentTermId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR"& _ 
-            " CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT dbo.Payment"& _ 
-            "Term.[PaymentTermId], [PaymentTermName], [NumberOfDays], [Description], [ListOrd"& _ 
-            "er], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FR"& _ 
-            "OM dbo.PaymentTerm JOIN CHANGETABLE(CHANGES dbo.PaymentTerm, @sync_last_received"& _ 
-            "_anchor) CT ON CT.[PaymentTermId] = dbo.PaymentTerm.[PaymentTermId] WHERE (CT.SY"& _ 
-            "S_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <= @sync_new_receiv"& _ 
-            "ed_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_c"& _ 
-            "lient_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PaymentT"& _ 
-            "erm')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Tracking has "& _ 
-            "cleaned up tracking information for table ''%s''. To recover from this error, th"& _ 
-            "e client must reinitialize its local database and try again',16,3,N'dbo.PaymentT"& _ 
-            "erm')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_PaymentTerm_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'PaymentTermSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[PaymentTermId] FROM CHANGETABLE(CHANGE"& _ 
-            "S dbo.PaymentTerm, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION"& _ 
-            " = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE"& _ 
-            "_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE"& _ 
-            "_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PaymentTerm')) > @sync_last_received"& _ 
-            "_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking informat"& _ 
-            "ion for table ''%s''. To recover from this error, the client must reinitialize i"& _ 
-            "ts local database and try again',16,3,N'dbo.PaymentTerm')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_PaymentTerm_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'PaymentTermSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.PaymentTerm.[PaymentTermId], [PaymentT"& _ 
-            "ermName], [NumberOfDays], [Description], [ListOrder], [CreatedBy], [CreatedDate]"& _ 
-            ", [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.PaymentTerm JOIN CHANGET"& _ 
-            "ABLE(CHANGES dbo.PaymentTerm, @sync_last_received_anchor) CT ON CT.[PaymentTermI"& _ 
-            "d] = dbo.PaymentTerm.[PaymentTermId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT"& _ 
-            ".SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS N"& _ 
-            "ULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN"& _ 
-            "_VALID_VERSION(object_id(N'dbo.PaymentTerm')) > @sync_last_received_anchor RAISE"& _ 
-            "RROR (N'SQL Server Change Tracking has cleaned up tracking information for table"& _ 
-            " ''%s''. To recover from this error, the client must reinitialize its local data"& _ 
-            "base and try again',16,3,N'dbo.PaymentTerm')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_PaymentTerm_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -5904,56 +5486,24 @@ Partial Public Class PaymentTypeSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PaymentTypeId", System.Data.SqlDbType.UniqueIdentifier))
         'PaymentTypeSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.PaymentType.[PaymentTypeId], [PaymentTypeName"& _ 
-            "], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [Recor"& _ 
-            "dStatus] FROM dbo.PaymentType LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.PaymentTyp"& _ 
-            "e, @sync_last_received_anchor) CT ON CT.[PaymentTypeId] = dbo.PaymentType.[Payme"& _ 
-            "ntTypeId] WHERE (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync"& _ 
-            "_client_id_binary) ELSE  BEGIN SELECT dbo.PaymentType.[PaymentTypeId], [PaymentT"& _ 
-            "ypeName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate],"& _ 
-            " [RecordStatus] FROM dbo.PaymentType JOIN CHANGETABLE(CHANGES dbo.PaymentType, @"& _ 
-            "sync_last_received_anchor) CT ON CT.[PaymentTypeId] = dbo.PaymentType.[PaymentTy"& _ 
-            "peId] WHERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERSION  <"& _ 
-            "= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_"& _ 
-            "CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object"& _ 
-            "_id(N'dbo.PaymentType')) > @sync_last_received_anchor RAISERROR (N'SQL Server Ch"& _ 
-            "ange Tracking has cleaned up tracking information for table ''%s''. To recover f"& _ 
-            "rom this error, the client must reinitialize its local database and try again',1"& _ 
-            "6,3,N'dbo.PaymentType')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_PaymentType_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'PaymentTypeSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[PaymentTypeId] FROM CHANGETABLE(CHANGE"& _ 
-            "S dbo.PaymentType, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION"& _ 
-            " = 'D' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE"& _ 
-            "_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE"& _ 
-            "_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PaymentType')) > @sync_last_received"& _ 
-            "_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking informat"& _ 
-            "ion for table ''%s''. To recover from this error, the client must reinitialize i"& _ 
-            "ts local database and try again',16,3,N'dbo.PaymentType')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_PaymentType_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'PaymentTypeSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.PaymentType.[PaymentTypeId], [PaymentT"& _ 
-            "ypeName], [ListOrder], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate],"& _ 
-            " [RecordStatus] FROM dbo.PaymentType JOIN CHANGETABLE(CHANGES dbo.PaymentType, @"& _ 
-            "sync_last_received_anchor) CT ON CT.[PaymentTypeId] = dbo.PaymentType.[PaymentTy"& _ 
-            "peId] WHERE (CT.SYS_CHANGE_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_ne"& _ 
-            "w_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <>"& _ 
-            " @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo."& _ 
-            "PaymentType')) > @sync_last_received_anchor RAISERROR (N'SQL Server Change Track"& _ 
-            "ing has cleaned up tracking information for table ''%s''. To recover from this e"& _ 
-            "rror, the client must reinitialize its local database and try again',16,3,N'dbo."& _ 
-            "PaymentType')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_PaymentType_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -6070,54 +5620,24 @@ Partial Public Class PositionSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PositionId", System.Data.SqlDbType.UniqueIdentifier))
         'PositionSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.Position.[PositionId], [PositionName], [Creat"& _ 
-            "edBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.Posi"& _ 
-            "tion LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Position, @sync_last_received_ancho"& _ 
-            "r) CT ON CT.[PositionId] = dbo.Position.[PositionId] WHERE (CT.SYS_CHANGE_CONTEX"& _ 
-            "T IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  BEGIN SELECT"& _ 
-            " dbo.Position.[PositionId], [PositionName], [CreatedBy], [CreatedDate], [Modifie"& _ 
-            "dBy], [ModifiedDate], [RecordStatus] FROM dbo.Position JOIN CHANGETABLE(CHANGES "& _ 
-            "dbo.Position, @sync_last_received_anchor) CT ON CT.[PositionId] = dbo.Position.["& _ 
-            "PositionId] WHERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT.SYS_CHANGE_CREATION_VERS"& _ 
-            "ION  <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_C"& _ 
-            "HANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACKING_MIN_VALID_VERSION("& _ 
-            "object_id(N'dbo.Position')) > @sync_last_received_anchor RAISERROR (N'SQL Server"& _ 
-            " Change Tracking has cleaned up tracking information for table ''%s''. To recove"& _ 
-            "r from this error, the client must reinitialize its local database and try again"& _ 
-            "',16,3,N'dbo.Position')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Position_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'PositionSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[PositionId] FROM CHANGETABLE(CHANGES d"& _ 
-            "bo.Position, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION = 'D'"& _ 
-            " AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTE"& _ 
-            "XT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACK"& _ 
-            "ING_MIN_VALID_VERSION(object_id(N'dbo.Position')) > @sync_last_received_anchor R"& _ 
-            "AISERROR (N'SQL Server Change Tracking has cleaned up tracking information for t"& _ 
-            "able ''%s''. To recover from this error, the client must reinitialize its local "& _ 
-            "database and try again',16,3,N'dbo.Position')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Position_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'PositionSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.Position.[PositionId], [PositionName],"& _ 
-            " [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM d"& _ 
-            "bo.Position JOIN CHANGETABLE(CHANGES dbo.Position, @sync_last_received_anchor) C"& _ 
-            "T ON CT.[PositionId] = dbo.Position.[PositionId] WHERE (CT.SYS_CHANGE_OPERATION "& _ 
-            "= 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_"& _ 
-            "CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_"& _ 
-            "TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Position')) > @sync_last_received_anc"& _ 
-            "hor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking information "& _ 
-            "for table ''%s''. To recover from this error, the client must reinitialize its l"& _ 
-            "ocal database and try again',16,3,N'dbo.Position')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Position_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -6238,54 +5758,24 @@ Partial Public Class ProvinceSyncAdapter
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@ProvinceID", System.Data.SqlDbType.UniqueIdentifier))
         'ProvinceSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalInsertsCommand.CommandText = "IF @sync_initialized = 0 SELECT dbo.Province.[ProvinceID], [ProvinceName], [Regio"& _ 
-            "nID], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] F"& _ 
-            "ROM dbo.Province LEFT OUTER JOIN CHANGETABLE(CHANGES dbo.Province, @sync_last_re"& _ 
-            "ceived_anchor) CT ON CT.[ProvinceID] = dbo.Province.[ProvinceID] WHERE (CT.SYS_C"& _ 
-            "HANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary) ELSE  "& _ 
-            "BEGIN SELECT dbo.Province.[ProvinceID], [ProvinceName], [RegionID], [CreatedBy],"& _ 
-            " [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordStatus] FROM dbo.Province J"& _ 
-            "OIN CHANGETABLE(CHANGES dbo.Province, @sync_last_received_anchor) CT ON CT.[Prov"& _ 
-            "inceID] = dbo.Province.[ProvinceID] WHERE (CT.SYS_CHANGE_OPERATION = 'I' AND CT."& _ 
-            "SYS_CHANGE_CREATION_VERSION  <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CON"& _ 
-            "TEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRA"& _ 
-            "CKING_MIN_VALID_VERSION(object_id(N'dbo.Province')) > @sync_last_received_anchor"& _ 
-            " RAISERROR (N'SQL Server Change Tracking has cleaned up tracking information for"& _ 
-            " table ''%s''. To recover from this error, the client must reinitialize its loca"& _ 
-            "l database and try again',16,3,N'dbo.Province')  END "
-        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalInsertsCommand.CommandText = "sp_sync_Province_SelectIncrementalInsert"
+        Me.SelectIncrementalInsertsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.SelectIncrementalInsertsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         'ProvinceSyncTableSelectIncrementalDeletesCommand command.
         Me.SelectIncrementalDeletesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalDeletesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT CT.[ProvinceID] FROM CHANGETABLE(CHANGES d"& _ 
-            "bo.Province, @sync_last_received_anchor) CT WHERE (CT.SYS_CHANGE_OPERATION = 'D'"& _ 
-            " AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT.SYS_CHANGE_CONTE"& _ 
-            "XT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary)); IF CHANGE_TRACK"& _ 
-            "ING_MIN_VALID_VERSION(object_id(N'dbo.Province')) > @sync_last_received_anchor R"& _ 
-            "AISERROR (N'SQL Server Change Tracking has cleaned up tracking information for t"& _ 
-            "able ''%s''. To recover from this error, the client must reinitialize its local "& _ 
-            "database and try again',16,3,N'dbo.Province')  END "
-        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalDeletesCommand.CommandText = "sp_sync_Province_SelectIncrementalDelete"
+        Me.SelectIncrementalDeletesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalDeletesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         'ProvinceSyncTableSelectIncrementalUpdatesCommand command.
         Me.SelectIncrementalUpdatesCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectIncrementalUpdatesCommand.CommandText = "IF @sync_initialized > 0  BEGIN SELECT dbo.Province.[ProvinceID], [ProvinceName],"& _ 
-            " [RegionID], [CreatedBy], [CreatedDate], [ModifiedBy], [ModifiedDate], [RecordSt"& _ 
-            "atus] FROM dbo.Province JOIN CHANGETABLE(CHANGES dbo.Province, @sync_last_receiv"& _ 
-            "ed_anchor) CT ON CT.[ProvinceID] = dbo.Province.[ProvinceID] WHERE (CT.SYS_CHANG"& _ 
-            "E_OPERATION = 'U' AND CT.SYS_CHANGE_VERSION <= @sync_new_received_anchor AND (CT"& _ 
-            ".SYS_CHANGE_CONTEXT IS NULL OR CT.SYS_CHANGE_CONTEXT <> @sync_client_id_binary))"& _ 
-            "; IF CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.Province')) > @sync_last_"& _ 
-            "received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up tracking "& _ 
-            "information for table ''%s''. To recover from this error, the client must reinit"& _ 
-            "ialize its local database and try again',16,3,N'dbo.Province')  END "
-        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectIncrementalUpdatesCommand.CommandText = "sp_sync_Province_SelectIncrementalUpdate"
+        Me.SelectIncrementalUpdatesCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_initialized", System.Data.SqlDbType.Bit))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectIncrementalUpdatesCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_new_received_anchor", System.Data.SqlDbType.BigInt))
@@ -9766,17 +9256,8 @@ Partial Public Class PackageDimensionSyncAdapter
     Private Sub InitializeCommands()
         'PackageDimensionSyncTableInsertCommand command.
         Me.InsertCommand = New System.Data.SqlClient.SqlCommand
-        Me.InsertCommand.CommandText = ";WITH CHANGE_TRACKING_CONTEXT (@sync_client_id_binary) INSERT INTO dbo.PackageDim"& _ 
-            "ension ([PackageDimensionId], [ShipmentId], [DrainingId], [CratingId], [Packagin"& _ 
-            "gId], [Length], [Width], [Height], [CreatedBy], [CreatedDate], [ModifiedBy], [Mo"& _ 
-            "difiedDate], [RecordStatus]) VALUES (@PackageDimensionId, @ShipmentId, @Draining"& _ 
-            "Id, @CratingId, @PackagingId, @Length, @Width, @Height, @CreatedBy, @CreatedDate"& _ 
-            ", @ModifiedBy, @ModifiedDate, @RecordStatus) SET @sync_row_count = @@rowcount; I"& _ 
-            "F CHANGE_TRACKING_MIN_VALID_VERSION(object_id(N'dbo.PackageDimension')) > @sync_"& _ 
-            "last_received_anchor RAISERROR (N'SQL Server Change Tracking has cleaned up trac"& _ 
-            "king information for table ''%s''. To recover from this error, the client must r"& _ 
-            "einitialize its local database and try again',16,3,N'dbo.PackageDimension') "
-        Me.InsertCommand.CommandType = System.Data.CommandType.Text
+        Me.InsertCommand.CommandText = "sp_sync_PackageDimension_Insert"
+        Me.InsertCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_client_id_binary", System.Data.SqlDbType.VarBinary))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageDimensionId", System.Data.SqlDbType.UniqueIdentifier))
         Me.InsertCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@ShipmentId", System.Data.SqlDbType.UniqueIdentifier))
@@ -9855,22 +9336,14 @@ Partial Public Class PackageDimensionSyncAdapter
         Me.UpdateCommand.Parameters.Add(updatecommand_sync_row_countParameter)
         'PackageDimensionSyncTableSelectConflictDeletedRowsCommand command.
         Me.SelectConflictDeletedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictDeletedRowsCommand.CommandText = "SELECT CT.[PackageDimensionId], CT.SYS_CHANGE_CONTEXT, CT.SYS_CHANGE_VERSION FROM"& _ 
-            " CHANGETABLE(CHANGES dbo.PackageDimension, @sync_last_received_anchor) CT WHERE "& _ 
-            "(CT.[PackageDimensionId] = @PackageDimensionId AND CT.SYS_CHANGE_OPERATION = 'D'"& _ 
-            ")"
-        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictDeletedRowsCommand.CommandText = "sp_sync_PackageDimension_SelectConflictDeletedRow"
+        Me.SelectConflictDeletedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@sync_last_received_anchor", System.Data.SqlDbType.BigInt))
         Me.SelectConflictDeletedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageDimensionId", System.Data.SqlDbType.UniqueIdentifier))
         'PackageDimensionSyncTableSelectConflictUpdatedRowsCommand command.
         Me.SelectConflictUpdatedRowsCommand = New System.Data.SqlClient.SqlCommand
-        Me.SelectConflictUpdatedRowsCommand.CommandText = "SELECT dbo.PackageDimension.[PackageDimensionId], [ShipmentId], [DrainingId], [Cr"& _ 
-            "atingId], [PackagingId], [Length], [Width], [Height], [CreatedBy], [CreatedDate]"& _ 
-            ", [ModifiedBy], [ModifiedDate], [RecordStatus], CT.SYS_CHANGE_CONTEXT, CT.SYS_CH"& _ 
-            "ANGE_VERSION FROM dbo.PackageDimension JOIN CHANGETABLE(VERSION dbo.PackageDimen"& _ 
-            "sion, ([PackageDimensionId]), (@PackageDimensionId)) CT  ON CT.[PackageDimension"& _ 
-            "Id] = dbo.PackageDimension.[PackageDimensionId]"
-        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.Text
+        Me.SelectConflictUpdatedRowsCommand.CommandText = "sp_sync_PackageDimension_SelectConflictUpdatedRow"
+        Me.SelectConflictUpdatedRowsCommand.CommandType = System.Data.CommandType.StoredProcedure
         Me.SelectConflictUpdatedRowsCommand.Parameters.Add(New System.Data.SqlClient.SqlParameter("@PackageDimensionId", System.Data.SqlDbType.UniqueIdentifier))
         'PackageDimensionSyncTableSelectIncrementalInsertsCommand command.
         Me.SelectIncrementalInsertsCommand = New System.Data.SqlClient.SqlCommand
